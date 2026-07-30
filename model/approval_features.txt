@@ -1,0 +1,9 @@
+age
+monthly_income
+employment_status
+years_of_employment
+credit_score
+existing_loan_amount
+loan_amount_requested
+loan_tenure_months
+purpose_of_loan

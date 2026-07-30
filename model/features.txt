@@ -1,0 +1,9 @@
+age
+income
+employment_status
+credit_score
+loan_amount
+loan_tenure
+debt_ratio
+previous_defaults
+existing_loans

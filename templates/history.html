@@ -1,0 +1,197 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="history-page">
+  <!-- Page Header -->
+  <div class="section-title mb-4">
+    <div>
+      <h2>Prediction History</h2>
+      <p class="text-muted">Complete audit trail of all loan risk assessments with filtering and export options</p>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-grid mb-4">
+    <div class="kpi-card" id="kpiTotal">
+      <div class="label">Total Predictions</div>
+      <div class="value">—</div>
+    </div>
+    <div class="kpi-card" id="kpiApproved">
+      <div class="label">Approved Applications</div>
+      <div class="value">—</div>
+    </div>
+    <div class="kpi-card" id="kpiRejected">
+      <div class="label">Rejected Applications</div>
+      <div class="value">—</div>
+    </div>
+    <div class="kpi-card" id="kpiDefault">
+      <div class="label">Default Predictions</div>
+      <div class="value">—</div>
+    </div>
+    <div class="kpi-card" id="kpiNonDefault">
+      <div class="label">Non-Default Predictions</div>
+      <div class="value">—</div>
+    </div>
+  </div>
+
+  <!-- Filters and Controls -->
+  <div class="card-soft p-4 mb-4">
+    <div class="d-flex flex-column flex-md-row gap-3 align-items-end">
+      <!-- Search Box -->
+      <div class="flex-grow-1">
+        <label for="searchInput" class="form-label small">Search by name, ID, or label</label>
+        <div class="search-group" style="position: relative;">
+          <input id="searchInput" class="form-control" placeholder="e.g., John Doe or CUST-001" aria-label="Search history">
+          <button id="clearSearch" class="btn btn-link btn-sm text-muted" title="Clear search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);">✕</button>
+        </div>
+      </div>
+
+      <!-- Prediction Type Filter -->
+      <div>
+        <label for="predictionTypeFilter" class="form-label small">Prediction Type</label>
+        <select id="predictionTypeFilter" class="form-select">
+          <option value="all">All Predictions</option>
+          <option value="default">Default Risk</option>
+          <option value="approval">Approval Decision</option>
+        </select>
+      </div>
+
+      <!-- Risk Filter -->
+      <div id="riskFilterContainer">
+        <label for="riskFilter" class="form-label small">Filter by Risk</label>
+        <select id="riskFilter" class="form-select">
+          <option value="">All Risks</option>
+          <option value="high">High Risk</option>
+          <option value="medium">Medium Risk</option>
+          <option value="low">Low Risk</option>
+        </select>
+      </div>
+
+      <!-- Status Filter -->
+      <div id="statusFilterContainer">
+        <label for="statusFilter" class="form-label small">Filter by Status</label>
+        <select id="statusFilter" class="form-select">
+          <option value="">All Status</option>
+          <option value="default">Default</option>
+          <option value="non-default">Non-Default</option>
+        </select>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="d-flex gap-2">
+        <button id="refreshBtn" class="btn btn-secondary" title="Refresh data">↻ Refresh</button>
+        <button id="exportBtn" class="btn btn-outline-primary" title="Export as CSV">⬇ Export</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History Table -->
+  <div class="history-card">
+    <div class="table-shell">
+      <div class="table-header">
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th style="width: 8%;">Serial No</th>
+              <th style="width: 22%;">Customer Name</th>
+              <th style="width: 18%;">Prediction Type</th>
+              <th style="width: 18%;">Risk Category</th>
+              <th style="width: 15%;">Probability</th>
+              <th style="width: 19%;">Created Date</th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+
+      <!-- Table Body with Rows -->
+      <div class="table-body" id="tableBody" role="region" aria-live="polite">
+        <!-- rows inserted here -->
+      </div>
+
+      <!-- Table Footer -->
+      <div class="table-footer d-flex justify-content-between align-items-center p-3">
+        <div id="emptyState" class="text-muted" hidden>
+          <div class="empty-illustration">🔍</div>
+          <div>No predictions found. Try adjusting filters.</div>
+        </div>
+        <div class="pagination-controls d-flex gap-2 align-items-center">
+          <button id="prevPage" class="btn btn-link btn-sm">‹ Prev</button>
+          <span id="pageInfo" class="text-muted small">1 / 1</span>
+          <button id="nextPage" class="btn btn-link btn-sm">Next ›</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading skeleton template -->
+  <template id="skeletonRow">
+    <div class="history-row skeleton-row">
+      <div class="cell skeleton" style="width: 8%;"></div>
+      <div class="cell skeleton" style="width: 22%;"></div>
+      <div class="cell skeleton" style="width: 18%;"></div>
+      <div class="cell skeleton" style="width: 18%;"></div>
+      <div class="cell skeleton" style="width: 15%;"></div>
+      <div class="cell skeleton" style="width: 19%;"></div>
+    </div>
+  </template>
+
+  <!-- Details Modal Template -->
+  <template id="detailsRow">
+    <div class="history-row-detail">
+      <div class="detail-content">
+        <div class="detail-header d-flex justify-content-between">
+          <strong>Prediction Details</strong>
+          <button class="btn-close" aria-label="Close"></button>
+        </div>
+        <div class="detail-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="detail-item">
+                <label>Customer ID</label>
+                <div class="detail-value" data-field="customer_id">—</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="detail-item">
+                <label>Customer Name</label>
+                <div class="detail-value" data-field="name">—</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="detail-item">
+                <label>Prediction</label>
+                <div class="detail-value" data-field="label">—</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="detail-item">
+                <label>Risk Category</label>
+                <div class="detail-value" data-field="risk_category">—</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="detail-item">
+                <label>Default Probability</label>
+                <div class="detail-value" data-field="probability">—</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="detail-item">
+                <label>Risk Score</label>
+                <div class="detail-value" data-field="risk_score">—</div>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="detail-item">
+                <label>Assessment Date</label>
+                <div class="detail-value" data-field="created_at">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script src="/static/js/history.js" defer></script>
+</div>
+{% endblock %}

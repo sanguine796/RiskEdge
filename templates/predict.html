@@ -1,0 +1,800 @@
+{% extends 'layout.html' %}
+{% block content %}
+
+<style>
+  /* Form styling for dark theme */
+  .form-control, .form-select {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: var(--text) !important;
+    border-radius: 8px !important;
+    padding: 10px 12px !important;
+    font-size: 0.9rem !important;
+    transition: all 0.2s ease !important;
+  }
+
+  .form-control:focus, .form-select:focus {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(77, 128, 245, 0.25) !important;
+    color: var(--text) !important;
+  }
+
+  .form-control::placeholder {
+    color: var(--muted) !important;
+  }
+
+  .form-select option {
+    background: #1a2a4a !important;
+    color: var(--text) !important;
+  }
+
+  .form-select option:checked {
+    background: linear-gradient(var(--primary), var(--primary)) !important;
+    background-color: var(--primary) !important;
+  }
+
+  /* Label styling */
+  .form-label {
+    color: var(--text) !important;
+    font-weight: 500 !important;
+    font-size: 0.875rem !important;
+    margin-bottom: 6px !important;
+    display: block !important;
+  }
+
+  /* Radio and checkbox styling */
+  .form-check-input {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    cursor: pointer !important;
+  }
+
+  .form-check-input:checked {
+    background: var(--primary) !important;
+    border-color: var(--primary) !important;
+  }
+
+  .form-check-input:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(77, 128, 245, 0.25) !important;
+  }
+
+  .form-check-label {
+    color: var(--text) !important;
+    cursor: pointer !important;
+    font-size: 0.9rem !important;
+  }
+
+  /* Section cards */
+  .form-section {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    transition: all 0.3s ease;
+  }
+
+  .form-section:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(77, 128, 245, 0.2);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .section-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--primary), #2764d6);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+  }
+
+  /* Divider */
+  .form-divider {
+    height: 1px;
+    background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.1), rgba(255,255,255,0));
+    margin: 28px 0;
+  }
+
+  /* Buttons */
+  .btn-predict {
+    background: linear-gradient(135deg, var(--primary), #2764d6) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 600 !important;
+    padding: 12px 24px !important;
+    border-radius: 8px !important;
+    font-size: 0.95rem !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    width: 100%;
+  }
+
+  .btn-predict:hover {
+    background: linear-gradient(135deg, #2764d6, #1a4db8) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(77, 128, 245, 0.3) !important;
+  }
+
+  /* Results styling */
+  .results-container {
+    margin-top: 32px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .result-card {
+    background: rgba(77, 128, 245, 0.08);
+    border: 1px solid rgba(77, 128, 245, 0.2);
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+    transition: all 0.2s ease;
+  }
+
+  .result-card:hover {
+    background: rgba(77, 128, 245, 0.12);
+    border-color: rgba(77, 128, 245, 0.4);
+  }
+
+  .result-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .result-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  .form-message {
+    margin-top: 20px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    display: none;
+  }
+
+  .form-message.error {
+    display: block;
+    background: rgba(255, 107, 114, 0.14);
+    border: 1px solid rgba(255, 107, 114, 0.3);
+    color: #ffb3b7;
+  }
+
+  .form-message.success {
+    display: block;
+    background: rgba(54, 214, 168, 0.14);
+    border: 1px solid rgba(54, 214, 168, 0.3);
+    color: #a8f0db;
+  }
+
+  .btn-predict:disabled {
+    opacity: 0.7;
+    cursor: wait;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Responsive grid */
+  .grid-4 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 12px;
+  }
+
+  .grid-factors {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+  }
+
+  @media (max-width: 768px) {
+    .grid-4, .grid-2 {
+      grid-template-columns: 1fr;
+    }
+
+    .form-section {
+      padding: 16px;
+    }
+
+    .section-title {
+      font-size: 0.95rem;
+    }
+  }
+</style>
+
+<div class="container-fluid py-5">
+  <div style="max-width: 1100px; margin: 0 auto;">
+    
+    <!-- Form Header -->
+    <div class="mb-5">
+      <h2 class="fw-bold mb-2">Loan Default Prediction</h2>
+      <p class="text-muted">Submit borrower details to assess default risk</p>
+    </div>
+
+    <!-- Application Form -->
+    <div class="card-soft p-5">
+      <form id="predict-form">
+        
+        <!-- Section 1: Customer Information -->
+        <div class="form-section">
+          <div class="section-header">
+            <div class="section-icon">👤</div>
+            <h3 class="section-title">Customer Information</h3>
+          </div>
+          
+          <div class="grid-4">
+            <div>
+              <label class="form-label">Full Name <span style="color: var(--danger);">*</span></label>
+              <input class="form-control" id="name" name="name" placeholder="Jane Doe" required>
+            </div>
+            <div>
+              <label class="form-label">Age <span style="color: var(--danger);">*</span></label>
+              <input class="form-control" id="age" name="age" type="number" min="18" max="100" placeholder="25" required>
+            </div>
+            <div>
+              <label class="form-label">Employment <span style="color: var(--danger);">*</span></label>
+              <select class="form-select" id="employment_status" name="employment_status" required>
+                <option value="" selected disabled>Select employment</option>
+                <option value="unemployed">Unemployed</option>
+                <option value="employed">Employed</option>
+                <option value="self-employed">Self-employed</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Monthly Income (₹) <span style="color: var(--danger);">*</span></label>
+              <input class="form-control" id="income" name="income" type="number" min="0" placeholder="50000" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="form-divider"></div>
+
+        <!-- Section 2: Credit History -->
+        <div class="form-section">
+          <div class="section-header">
+            <div class="section-icon">💳</div>
+            <h3 class="section-title">Credit History</h3>
+          </div>
+
+          <div class="grid-4">
+            <div>
+              <label class="form-label">Credit Score(Max of 900) <span style="color: var(--danger);">*</span></label>
+              <input class="form-control" id="credit_score" name="credit_score" type="number" min="300" max="900" placeholder="650" required>
+            </div>
+            <div>
+              <label class="form-label">Debt Ratio <span style="color: var(--danger);">*</span></label>
+              <input class="form-control" id="debt_ratio" name="debt_ratio" type="number" step="0.01" min="0" max="1" placeholder="0.35" required>
+            </div>
+            <div>
+              <label class="form-label">Previous Defaults <span style="color: var(--danger);">*</span></label>
+              <select class="form-select" id="previous_defaults" name="previous_defaults" required>
+                <option value="" selected disabled>Select</option>
+                <option value="0">None</option>
+                <option value="1">One or more</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Existing Loans <span style="color: var(--danger);">*</span></label>
+              <input class="form-control" id="existing_loans" name="existing_loans" type="number" min="0" placeholder="2" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="form-divider"></div>
+
+        <!-- Section 3: Loan Details -->
+        <div class="form-section">
+          <div class="section-header">
+            <div class="section-icon">📋</div>
+            <h3 class="section-title">Loan Details</h3>
+          </div>
+
+          <div class="grid-2">
+            <div>
+              <label class="form-label">Loan Amount (₹) <span style="color: var(--danger);">*</span></label>
+              <input class="form-control" id="loan_amount" name="loan_amount" type="number" min="0" placeholder="100000" required>
+            </div>
+            <div>
+              <label class="form-label">Tenure (Months) <span style="color: var(--danger);">*</span></label>
+              <input class="form-control" id="loan_tenure" name="loan_tenure" type="number" min="1" max="360" placeholder="36" required>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div style="display: flex; gap: 12px; margin-top: 28px;">
+          <button class="btn-predict" type="submit">Assess Risk</button>
+        </div>
+      </form>
+
+      <div id="form-message" class="form-message" role="alert"></div>
+
+      <!-- Results Section -->
+      <div id="result" style="display:none;" class="results-container">
+        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text); margin-bottom: 24px;">Risk Assessment Result</h3>
+        
+        <!-- Risk Summary Cards -->
+        <div class="grid-4" style="margin-bottom: 24px;">
+          <div class="result-card">
+            <div class="result-label">Prediction</div>
+            <div id="res-label" class="result-value">—</div>
+          </div>
+          <div class="result-card">
+            <div class="result-label">Risk Category</div>
+            <div id="res-category" class="result-value">—</div>
+          </div>
+          <div class="result-card">
+            <div class="result-label">Risk Score</div>
+            <div id="res-score" class="result-value">—</div>
+          </div>
+          <div class="result-card">
+            <div class="result-label">Default Probability</div>
+            <div id="res-prob" class="result-value">—</div>
+          </div>
+        </div>
+
+        <!-- Key Contributing Factors -->
+        <div>
+          <h5 style="color: var(--text); margin-bottom: 16px; font-weight: 600;">Key Contributing Factors</h5>
+          <div id="res-reasons" class="grid-factors"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const form = document.getElementById('predict-form');
+const submitButton = form.querySelector('button[type="submit"]');
+const messageBox = document.getElementById('form-message');
+const resultBox = document.getElementById('result');
+
+function showMessage(text, type = 'error') {
+  messageBox.textContent = text;
+  messageBox.className = `form-message ${type}`;
+}
+
+function clearMessage() {
+  messageBox.textContent = '';
+  messageBox.className = 'form-message';
+}
+
+function notifyDashboardRefresh() {
+  try {
+    window.localStorage.setItem('loan_dashboard_refresh', String(Date.now()));
+  } catch (error) {
+    console.warn('Unable to notify dashboard refresh', error);
+  }
+  window.dispatchEvent(new Event('dashboard:refresh'));
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearMessage();
+  
+  if (!form.checkValidity()) {
+    form.classList.add('was-validated');
+    showMessage('Please fill in all required fields before assessing risk.');
+    return;
+  }
+
+  const fd = new FormData(form);
+  const body = {};
+  fd.forEach((value, key) => { body[key] = value; });
+
+  submitButton.disabled = true;
+  submitButton.textContent = 'Assessing...';
+  
+  try {
+    const response = await fetch('/api/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    const contentType = response.headers.get('content-type') || '';
+    const rawText = await response.text();
+    let data = null;
+
+    if (rawText) {
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        throw new Error('The server returned an unexpected response. Please try again.');
+      }
+    }
+
+    if (!response.ok || !contentType.includes('application/json')) {
+      throw new Error(data?.error || data?.message || 'Please sign in again and try the assessment.');
+    }
+
+    if (!data || typeof data !== 'object') {
+      throw new Error('The server returned an incomplete response. Please try again.');
+    }
+
+    displayResults(data///////
+    
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  );
+    resultBox.style.display = 'block';
+    resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    
+    
+    notifyDashboardRefresh();
+    showMessage('Assessment completed successfully.', 'success');
+  } catch (error) {
+    resultBox.style.display = 'none';
+    showMessage(error.message || 'Unable to assess risk right now.');
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = 'Assess Risk';
+  }
+});
+
+function displayResults(data) {
+  // Prediction label and styling
+  const labelEl = document.getElementById('res-label');
+  const labelText = data.label || 'N/A';
+  const riskLevel = (data.probability || 0) * 100;
+  
+  let badgeHTML = '';
+  let categoryColor = '#36d6a8'; // Low (green)
+  let categoryIcon = '✅';
+  
+  if (riskLevel >= 66) {
+    badgeHTML = '<span style="color: #ff6b72;">⚠️ Default</span>';
+    categoryColor = '#ff6b72';
+    categoryIcon = '⚠️';
+  } else {
+    badgeHTML = '<span style="color: #36d6a8;">✅ Non-Default</span>';
+    categoryColor = '#36d6a8';
+  }
+  
+  labelEl.innerHTML = badgeHTML;
+  labelEl.style.color = categoryColor;
+  
+  // Risk category with icon and styling
+  let categoryText = data.risk_category || 'Medium';
+  let categoryEmoji = categoryText === 'High' ? '⚠️' : (categoryText === 'Low' ? '✅' : '⚡');
+  document.getElementById('res-category').innerHTML = `${categoryEmoji} ${categoryText}`;
+  
+  // Risk score
+  document.getElementById('res-score').textContent = `${data.risk_score ?? '—'} / 100`;
+  
+  // Probability
+  const probPercent = ((data.probability || 0) * 100).toFixed(1);
+  document.getElementById('res-prob').textContent = `${probPercent}%`;
+  
+  // Contributing factors
+  const list = document.getElementById('res-reasons');
+  if (data.reasons && data.reasons.length > 0) {
+    list.innerHTML = data.reasons.map((reason, idx) => {
+      const importance = (reason.importance * 100).toFixed(1);
+      const value = parseFloat(reason.value).toFixed(2);
+      return `
+        <div style="background: rgba(77,128,245,0.08); border: 1px solid rgba(77,128,245,0.15); padding: 14px; border-radius: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+            <strong style="color: var(--text); font-size: 0.9rem;">${reason.feature}</strong>
+            <span style="background: linear-gradient(135deg, var(--primary), #2764d6); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">#${idx + 1}</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.85rem;">
+            <div>
+              <span style="color: var(--muted);">Value:</span>
+              <div style="color: var(--primary); font-weight: 600;">${value}</div>
+            </div>
+            <div>
+              <span style="color: var(--muted);">Impact:</span>
+              <div style="color: var(--success); font-weight: 600;">${importance}%</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } else {
+    list.innerHTML = '<div style="color: var(--muted); text-align: center; padding: 20px; grid-column: 1/-1;">No detailed factors available</div>';
+  }
+}
+</script>
+
+{% endblock %}

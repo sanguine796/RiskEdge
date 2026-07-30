@@ -1,0 +1,95 @@
+{% extends 'layout.html' %}
+{% block content %}
+
+<!-- Hero Section -->
+<div style="text-align: center; padding: 60px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);">
+  <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 16px; color: #ffffff;">Loan Risk Prediction</h1>
+  <p style="font-size: 1.1rem; color: #e0e7ff; max-width: 800px; margin: 0 auto 30px; line-height: 1.6;">
+    Our AI-powered loan risk platform evaluates applicant data to predict both loan approval outcomes and the likelihood of loan default, helping lenders make faster and more informed decisions.
+  </p>
+</div>
+
+<!-- About Section -->
+<section style="padding: 60px 20px; background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);">
+  <div style="max-width: 800px; margin: 0 auto;">
+    <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 24px; color: #ffffff;">About This Project</h2>
+    
+    <div style="margin-bottom: 32px;">
+      <h3 style="font-size: 1.3rem; font-weight: 600; margin-bottom: 12px; color: #ffffff;">What is Loan Risk Prediction?</h3>
+      <p style="color: #e0e7ff; line-height: 1.8; margin: 0;">
+        Loan Risk Prediction is an AI-powered system that helps financial institutions evaluate loan applications by predicting both loan approval eligibility and the probability of loan default. Using applicant details such as income, employment status, credit score, loan amount, and repayment history, the system provides accurate insights to support smarter lending decisions.
+      </p>
+    </div>
+
+    <div style="margin-bottom: 32px;">
+      <h3 style="font-size: 1.3rem; font-weight: 600; margin-bottom: 12px; color: #ffffff;">Why Machine Learning?</h3>
+      <p style="color: #e0e7ff; line-height: 1.8; margin: 0;">
+        Machine learning can identify complex patterns in financial and applicant data that traditional rule-based methods may overlook. By learning from historical loan records, the model predicts approval outcomes and assesses default risk with greater accuracy, enabling faster, more consistent, and data-driven decision-making.
+      </p>
+    </div>
+
+    <div>
+      <h3 style="font-size: 1.3rem; font-weight: 600; margin-bottom: 12px; color: #ffffff;">How It Helps</h3>
+      <p style="color: #e0e7ff; line-height: 1.8; margin: 0;">
+       This system assists banks and financial institutions in making reliable lending decisions by recommending whether a loan should be approved and estimating the applicant's default risk. It helps reduce financial losses, improve credit risk assessment, streamline the loan evaluation process, and promote responsible lending practices.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works Section -->
+<section style="padding: 60px 20px; background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);">
+  <div style="max-width: 900px; margin: 0 auto;">
+    <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 40px; color: #ffffff; text-align: center;">How It Works</h2>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px;">
+      <!-- Step 1 -->
+      <div style="text-align: center;">
+        <div style="width: 60px; height: 60px; background-color: #60a5fa; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; margin: 0 auto 16px;">1</div>
+        <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; color: #ffffff;">Enter Borrower Details</h3>
+        <p style="color: #e0e7ff; line-height: 1.6; margin: 0;">
+          Input borrower information such as income, credit score, debt, employment history, and loan amount.
+        </p>
+      </div>
+
+      <!-- Step 2 -->
+      <div style="text-align: center;">
+        <div style="width: 60px; height: 60px; background-color: #60a5fa; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; margin: 0 auto 16px;">2</div>
+        <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; color: #ffffff;">Data Analysis</h3>
+        <p style="color: #e0e7ff; line-height: 1.6; margin: 0;">
+          The system validates and processes the data, extracting relevant features to match the model's input requirements.
+        </p>
+      </div>
+
+      <!-- Step 3 -->
+      <div style="text-align: center;">
+        <div style="width: 60px; height: 60px; background-color: #60a5fa; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; margin: 0 auto 16px;">3</div>
+        <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; color: #ffffff;">ML Prediction</h3>
+        <p style="color: #e0e7ff; line-height: 1.6; margin: 0;">
+          The trained machine learning model analyzes the data and calculates the probability of loan default.
+        </p>
+      </div>
+
+      <!-- Step 4 -->
+      <div style="text-align: center;">
+        <div style="width: 60px; height: 60px; background-color: #60a5fa; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; margin: 0 auto 16px;">4</div>
+        <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; color: #ffffff;">Risk Score & Result</h3>
+        <p style="color: #e0e7ff; line-height: 1.6; margin: 0;">
+          Receive a clear risk score (0-100%) and prediction result indicating whether the borrower is likely to default.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<div style="text-align: center; padding: 60px 20px; background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); border-top: 1px solid rgba(255,255,255,0.1);">
+  <h2 style="font-size: 1.8rem; font-weight: 700; margin-bottom: 20px; color: #ffffff;">Ready to Get Started?</h2>
+  <p style="color: #e0e7ff; margin-bottom: 30px;">Choose a prediction module below to evaluate a loan application using our AI-powered machine learning models.</p>
+  <div class="home-cta-actions">
+    <a class="home-cta-btn" href="/predict_approval">Loan Approval Prediction</a>
+    <a class="home-cta-btn" href="/predict">Loan Default Prediction</a>
+  </div>
+</div>
+
+{% endblock %}

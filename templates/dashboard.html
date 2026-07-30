@@ -1,0 +1,465 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <!-- Header Section -->
+    <div class="mb-4">
+        <h2 class="fw-bold">Dashboard</h2>
+        <p class="text-muted">Loan Default Prediction Analytics Dashboard</p>
+    </div>
+
+    <!-- Filters & Controls -->
+    <div class="card-soft p-4 mb-4">
+        <div class="row align-items-end g-3">
+            <div class="col-md-3">
+                <label class="form-label fw-600 mb-2">From Date</label>
+                <input type="date" id="fromDate" class="form-control">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-600 mb-2">To Date</label>
+                <input type="date" id="toDate" class="form-control">
+            </div>
+
+            <div class="col-md-3">
+                <button id="refreshBtn" class="btn btn-primary w-100">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh Dashboard
+                </button>
+            </div>
+
+            <div class="col-md-3">
+                <button id="exportPdfBtn" class="btn btn-outline-light w-100">
+                    <i class="bi bi-file-pdf"></i> Export PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI Cards - Default Predictions -->
+    <div class="mb-4">
+        <h5 class="mb-3" style="color: var(--text);">Default Risk Predictions</h5>
+        <div class="row g-3">
+
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card-soft p-4 dashboard-card h-100">
+                <div class="small text-muted mb-2">📊 Total Predictions</div>
+                <h3 id="totalPredictions" class="mb-0">0</h3>
+            </div>
+        </div>
+
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card-soft p-4 dashboard-card h-100">
+                <div class="small text-muted mb-2">📈 Avg Risk Score</div>
+                <h3 id="averageRiskScore" class="mb-0">0</h3>
+            </div>
+        </div>
+
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card-soft p-4 dashboard-card h-100">
+                <div class="small text-muted mb-2">🎯 Model Accuracy</div>
+                <h3 id="modelAccuracy" class="mb-0">0%</h3>
+            </div>
+        </div>
+
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card-soft p-4 dashboard-card h-100">
+                <div class="small text-muted mb-2">⚠️ High Risk</div>
+                <h3 id="highRiskBorrowers" class="mb-0">0</h3>
+            </div>
+        </div>
+
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card-soft p-4 dashboard-card h-100">
+                <div class="small text-muted mb-2">⚡ Medium Risk</div>
+                <h3 id="mediumRiskBorrowers" class="mb-0">0</h3>
+            </div>
+        </div>
+
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card-soft p-4 dashboard-card h-100">
+                <div class="small text-muted mb-2">✅ Low Risk</div>
+                <h3 id="lowRiskBorrowers" class="mb-0">0</h3>
+            </div>
+        </div>
+
+        </div>
+    </div>
+
+    <!-- KPI Cards - Approval Decisions -->
+    <div class="mb-4">
+        <h5 class="mb-3" style="color: var(--text);">Loan Approval Decisions</h5>
+        <div class="row g-3">
+
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card-soft p-4 dashboard-card h-100">
+                <div class="small text-muted mb-2">📋 Total Applications</div>
+                <h3 id="totalApprovals" class="mb-0">0</h3>
+            </div>
+        </div>
+
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card-soft p-4 dashboard-card h-100">
+                <div class="small text-muted mb-2">✅ Approved</div>
+                <h3 id="approvedCount" class="mb-0">0</h3>
+            </div>
+        </div>
+
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card-soft p-4 dashboard-card h-100">
+                <div class="small text-muted mb-2">❌ Rejected</div>
+                <h3 id="rejectedCount" class="mb-0">0</h3>
+            </div>
+        </div>
+
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card-soft p-4 dashboard-card h-100">
+                <div class="small text-muted mb-2">📊 Approval Rate</div>
+                <h3 id="approvalRate" class="mb-0">0%</h3>
+            </div>
+        </div>
+
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card-soft p-4 dashboard-card h-100">
+                <div class="small text-muted mb-2">📈 Avg Approval Score</div>
+                <h3 id="avgApprovalScore" class="mb-0">0</h3>
+            </div>
+        </div>
+
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-lg-6">
+            <div class="card-soft p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Risk Distribution</h5>
+                    <small class="text-muted">Categories</small>
+                </div>
+                <div style="position: relative; height: 250px;">
+                    <canvas id="riskDistributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card-soft p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Default vs Non-Default</h5>
+                    <small class="text-muted">Outcome Distribution</small>
+                </div>
+                <div style="position: relative; height: 250px;">
+                    <canvas id="defaultChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Approval Chart Section -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-lg-6">
+            <div class="card-soft p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Approval vs Rejection</h5>
+                    <small class="text-muted">Decision Distribution</small>
+                </div>
+                <div style="position: relative; height: 250px;">
+                    <canvas id="approvalChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Recent Predictions Table -->
+    <div class="card-soft p-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="mb-0">Recent Predictions</h5>
+            <span class="badge bg-success">Live</span>
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Customer Name</th>
+                        <th style="width: 15%;">Prediction Type</th>
+                        <th style="width: 20%;">Result/Risk</th>
+                        <th style="width: 15%;">Probability</th>
+                        <th style="width: 15%;">Score</th>
+                        <th style="width: 15%;">Created Date</th>
+                    </tr>
+                </thead>
+
+                <tbody id="recentPredictionsList">
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            Loading predictions...
+                        </td>
+                    </tr>
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+    .dashboard-card {
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        cursor: default;
+    }
+
+    .dashboard-card:hover {
+        border-color: rgba(77, 128, 245, 0.3);
+        background: rgba(77, 128, 245, 0.05);
+        transform: translateY(-4px);
+    }
+
+    .dashboard-card h3 {
+        color: var(--primary);
+        font-size: 1.75rem;
+        font-weight: 700;
+    }
+
+    .card-soft {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 30px 80px rgba(1, 14, 45, 0.25);
+    }
+
+    .table {
+        background: transparent;
+        color: var(--text);
+    }
+
+    .table thead {
+        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    .table thead th {
+        color: var(--text) !important;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 12px 8px;
+        border: none !important;
+        background: transparent !important;
+    }
+
+    .table tbody tr {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        transition: all 0.2s ease;
+        background: transparent !important;
+    }
+
+    .table tbody tr:hover {
+        background: rgba(77, 128, 245, 0.08) !important;
+        border-bottom-color: rgba(77, 128, 245, 0.2);
+    }
+
+    .table td {
+        color: var(--text) !important;
+        padding: 12px 8px;
+        border: none !important;
+        background: transparent !important;
+        vertical-align: middle;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .table th {
+        color: var(--text) !important;
+        border: none !important;
+        background: transparent !important;
+        vertical-align: middle;
+    }
+
+    .badge {
+        font-weight: 600;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.7rem;
+        letter-spacing: 0.5px;
+        display: inline-block;
+        white-space: nowrap;
+        border: 1px solid;
+    }
+
+    .badge-default {
+        background: rgba(255, 107, 114, 0.2) !important;
+        color: #ff9aac !important;
+        border-color: rgba(255, 107, 114, 0.3) !important;
+    }
+
+    .badge-non-default {
+        background: rgba(54, 214, 168, 0.2) !important;
+        color: #6eff9f !important;
+        border-color: rgba(54, 214, 168, 0.3) !important;
+    }
+
+    .badge-high {
+        background: rgba(255, 107, 114, 0.2) !important;
+        color: #ff9aac !important;
+        border-color: rgba(255, 107, 114, 0.3) !important;
+    }
+
+    .badge-medium {
+        background: rgba(255, 197, 66, 0.2) !important;
+        color: #ffd699 !important;
+        border-color: rgba(255, 197, 66, 0.3) !important;
+    }
+
+    .badge-low {
+        background: rgba(54, 214, 168, 0.2) !important;
+        color: #6eff9f !important;
+        border-color: rgba(54, 214, 168, 0.3) !important;
+    }
+
+    .customer-id {
+        font-family: 'Courier New', monospace;
+        color: var(--muted) !important;
+        font-size: 0.85rem !important;
+        display: inline-block;
+    }
+
+    .customer-name {
+        color: var(--text) !important;
+        font-weight: 500 !important;
+        display: inline-block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .prediction-label {
+        color: var(--text) !important;
+        font-weight: 600 !important;
+        display: inline-block;
+    }
+
+    .risk-category {
+        color: var(--text) !important;
+        font-weight: 600 !important;
+        display: inline-block;
+    }
+
+    .risk-score {
+        color: var(--primary) !important;
+        font-weight: 600 !important;
+        font-size: 0.95rem !important;
+        display: inline-block;
+    }
+
+    .probability {
+        color: var(--warning) !important;
+        font-weight: 600 !important;
+        font-size: 0.95rem !important;
+        display: inline-block;
+    }
+
+    .created-date {
+        color: var(--muted) !important;
+        font-size: 0.85rem !important;
+        display: inline-block;
+    }
+
+    .form-label {
+        color: var(--muted);
+        font-size: 0.875rem;
+    }
+
+    .form-control {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: var(--text);
+        border-radius: 8px;
+        padding: 0.6rem 0.8rem;
+        font-size: 0.875rem;
+    }
+
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.2rem rgba(77, 128, 245, 0.25);
+        color: var(--text);
+    }
+
+    .form-control::placeholder {
+        color: var(--muted);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary), #2764d6);
+        border: none;
+        font-weight: 600;
+        padding: 0.65rem 1.5rem;
+        border-radius: 999px;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #2764d6, #1a4db8);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(77, 128, 245, 0.3);
+    }
+
+    .btn-outline-light {
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--text);
+        font-weight: 600;
+        padding: 0.65rem 1.5rem;
+        border-radius: 999px;
+    }
+
+    .btn-outline-light:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.4);
+        color: var(--text);
+    }
+
+    h5 {
+        color: var(--text);
+        font-weight: 700;
+    }
+
+    .fw-600 {
+        font-weight: 600;
+    }
+
+    .spinner-border {
+        color: var(--primary);
+    }
+
+    .text-muted {
+        color: var(--muted) !important;
+    }
+
+    .bg-success {
+        background: rgba(54, 214, 168, 0.2) !important;
+        color: #36d6a8;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="/static/js/dashboard.js"></script>
+
+{% endblock %}

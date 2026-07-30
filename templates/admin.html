@@ -1,0 +1,46 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="admin-card">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4>Admin dashboard</h4>
+      <p class="text-muted">Manage predictions, users, and analytics in one control panel.</p>
+    </div>
+    <a href="/dashboard" class="btn btn-secondary btn-sm">Back to dashboard</a>
+  </div>
+  <div class="row g-4">
+    <div class="col-xl-4">
+      <div class="card-soft p-4">
+        <h5>Manage records</h5>
+        <p class="text-muted">Review prediction history with delete capability.</p>
+      </div>
+    </div>
+    <div class="col-xl-8">
+      <div id="admin-records"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const refreshAdmin = async () => {
+  const list = await fetch('/api/history').then(r => r.json());
+  const container = document.getElementById('admin-records');
+  container.innerHTML = list.map(it => `
+    <div class="card-soft mb-3 p-3 d-flex justify-content-between align-items-start flex-column flex-md-row gap-3">
+      <div>
+        <div class="text-muted">#${it.id}</div>
+        <div class="fw-semibold">${it.name || it.customer_id || 'Unknown borrower'}</div>
+        <div class="text-muted small">${it.risk_category} • ${(it.probability * 100).toFixed(1)}% • ${it.created_at}</div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="deleteRecord(${it.id})">Delete</button>
+    </div>`).join('');
+};
+
+const deleteRecord = async (id) => {
+  await fetch(`/api/admin/delete/${id}`, { method: 'POST' });
+  refreshAdmin();
+};
+
+refreshAdmin();
+</script>
+{% endblock %}
