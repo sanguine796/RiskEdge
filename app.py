@@ -1,5 +1,6 @@
 import os
 import json
+import tempfile
 import warnings
 import pandas as pd
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_file
@@ -26,6 +27,19 @@ from sqlalchemy import func
 import pymysql
 
 load_dotenv()
+
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+
+
+def resolve_project_path(environment_name, default_relative_path):
+    configured_path = os.getenv(environment_name, default_relative_path)
+    if os.path.isabs(configured_path):
+        return configured_path
+    return os.path.join(PROJECT_ROOT, configured_path)
+
+
+def sqlite_url(database_path):
+    return f"sqlite:///{database_path.replace(os.sep, '/')}"
 
 
 def normalize_approval_label(label):
@@ -187,6 +201,11 @@ def load_or_rebuild_model(model_path, features_path, retrain_func, state, model_
         except Exception:
             pass
 
+    if os.getenv('VERCEL'):
+        _state_set(state, model_attr, None)
+        _state_set(state, features_attr, [])
+        return None
+
     try:
         model = retrain_func()
         with open(features_path, encoding='utf-8') as f:
@@ -203,7 +222,9 @@ def load_or_rebuild_model(model_path, features_path, retrain_func, state, model_
 def create_app():
     app = Flask(__name__, static_folder='static', template_folder='templates')
     app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET', 'dev-secret')
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'mysql+pymysql://root:Sanguine%40123@127.0.0.1:3306/loan')
+    local_database_path = os.path.join(PROJECT_ROOT, 'instance', 'loan.db')
+    default_database_path = os.path.join(tempfile.gettempdir(), 'loan.db') if os.getenv('VERCEL') else local_database_path
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL') or sqlite_url(default_database_path)
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     app.config['SESSION_COOKIE_SECURE'] = False
@@ -220,12 +241,12 @@ def create_app():
     
     db.init_app(app)
 
-    model_path = os.getenv('MODEL_PATH', 'model/model.joblib')
-    features_path = os.getenv('FEATURES_PATH', 'model/features.txt')
-    default_csv_path = os.getenv('DEFAULT_CSV_PATH', 'model/loan_default_data.csv')
-    approval_model_path = os.getenv('APPROVAL_MODEL_PATH', 'model/approval_model.joblib')
-    approval_features_path = os.getenv('APPROVAL_FEATURES_PATH', 'model/approval_features.txt')
-    approval_csv_path = os.getenv('APPROVAL_CSV_PATH', 'model/loan_approval_data.csv')
+    model_path = resolve_project_path('MODEL_PATH', 'model/model.joblib')
+    features_path = resolve_project_path('FEATURES_PATH', 'model/features.txt')
+    default_csv_path = resolve_project_path('DEFAULT_CSV_PATH', 'model/loan_default_data.csv')
+    approval_model_path = resolve_project_path('APPROVAL_MODEL_PATH', 'model/approval_model.joblib')
+    approval_features_path = resolve_project_path('APPROVAL_FEATURES_PATH', 'model/approval_features.txt')
+    approval_csv_path = resolve_project_path('APPROVAL_CSV_PATH', 'model/loan_approval_data.csv')
     app.config['MODEL_PATH'] = model_path
     app.config['FEATURES_PATH'] = features_path
     app.config['DEFAULT_CSV_PATH'] = default_csv_path
