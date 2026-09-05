@@ -15,9 +15,7 @@
     predictionTypeFilter: document.getElementById('predictionTypeFilter'),
     search: document.getElementById('searchInput'),
     riskFilter: document.getElementById('riskFilter'),
-    statusFilter: document.getElementById('statusFilter'),
     riskFilterContainer: document.getElementById('riskFilterContainer'),
-    statusFilterContainer: document.getElementById('statusFilterContainer'),
     clearSearch: document.getElementById('clearSearch'),
     refresh: document.getElementById('refreshBtn'),
     export: document.getElementById('exportBtn'),
@@ -36,36 +34,11 @@
   function setPredictionType(type) {
     predictionType = type;
     currentAPI = type === 'approval' ? '/api/approval_history' : type === 'default' ? '/api/history' : '/api/all_history';
-    
-    // Update UI visibility and filter options
+
     if (type === 'approval') {
       el.riskFilterContainer.style.display = 'none';
-      // Update status filter options for approval
-      el.statusFilter.innerHTML = `
-        <option value="">All Decisions</option>
-        <option value="approve">Approved</option>
-        <option value="reject">Rejected</option>
-      `;
-      el.statusFilterContainer.style.display = 'block';
-    } else if (type === 'default') {
-      el.riskFilterContainer.style.display = 'block';
-      // Update status filter options for default
-      el.statusFilter.innerHTML = `
-        <option value="">All Status</option>
-        <option value="default">Default</option>
-        <option value="non-default">Non-Default</option>
-      `;
-      el.statusFilterContainer.style.display = 'block';
     } else {
-      el.riskFilterContainer.style.display = 'none';
-      el.statusFilter.innerHTML = `
-        <option value="">All Status</option>
-        <option value="default">Default</option>
-        <option value="non-default">Non-Default</option>
-        <option value="approve">Approved</option>
-        <option value="reject">Rejected</option>
-      `;
-      el.statusFilterContainer.style.display = 'block';
+      el.riskFilterContainer.style.display = 'block';
     }
   }
 
@@ -129,39 +102,18 @@
   function applyFilter() {
     const q = el.search.value.trim().toLowerCase();
     const riskVal = el.riskFilter.value.trim().toLowerCase();
-    const statusVal = el.statusFilter.value.trim().toLowerCase();
 
     filtered = rawList.filter(it => {
-      // Text search
       const matchesText = !q || 
         (it.customer_id||'').toString().toLowerCase().includes(q) ||
         (it.name||'').toLowerCase().includes(q) ||
         (it.label||it.predicted_label||'').toLowerCase().includes(q) ||
         (it.risk_category||'').toLowerCase().includes(q);
 
-      // Risk filter (for default predictions only)
-        const matchesRisk = !riskVal || predictionType === 'all' || predictionType !== 'default' ||
+      const matchesRisk = !riskVal || predictionType === 'all' || predictionType !== 'default' ||
         (it.risk_category||'').toLowerCase() === riskVal;
 
-      // Status filter
-      let matchesStatus = true;
-      if (statusVal) {
-        const label = (it.label || it.predicted_label || '').toLowerCase();
-        if (predictionType === 'default') {
-          matchesStatus = (statusVal === 'default' && label === 'default') ||
-                         (statusVal === 'non-default' && label !== 'default');
-        } else if (predictionType === 'approval') {
-          matchesStatus = (statusVal === 'approve' && label === 'approved') ||
-                         (statusVal === 'reject' && label === 'rejected');
-        } else {
-          matchesStatus = (statusVal === 'default' && label === 'default') ||
-                         (statusVal === 'non-default' && label !== 'default') ||
-                         (statusVal === 'approve' && label === 'approved') ||
-                         (statusVal === 'reject' && label === 'rejected');
-        }
-      }
-
-      return matchesText && matchesRisk && matchesStatus;
+      return matchesText && matchesRisk;
     });
   }
 
@@ -369,7 +321,6 @@
 
   el.search.addEventListener('input', debounce(() => { page = 1; applyFilter(); renderTable(); }, 200));
   el.riskFilter.addEventListener('change', () => { page = 1; applyFilter(); renderTable(); });
-  el.statusFilter.addEventListener('change', () => { page = 1; applyFilter(); renderTable(); });
 
   // sorting buttons
   document.querySelectorAll('.sort-btn').forEach(btn => {
