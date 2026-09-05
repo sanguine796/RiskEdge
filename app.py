@@ -228,6 +228,10 @@ def create_app():
     configured_database_url = os.getenv('DATABASE_URL') or sqlite_url(default_database_path)
     if configured_database_url.startswith('mysql://'):
         configured_database_url = configured_database_url.replace('mysql://', 'mysql+pymysql://', 1)
+    elif configured_database_url.startswith('postgres://'):
+        configured_database_url = configured_database_url.replace('postgres://', 'postgresql+psycopg://', 1)
+    elif configured_database_url.startswith('postgresql://'):
+        configured_database_url = configured_database_url.replace('postgresql://', 'postgresql+psycopg://', 1)
     try:
         make_url(configured_database_url)
     except Exception:
