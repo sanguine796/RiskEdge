@@ -24,6 +24,7 @@ from reportlab.lib.units import inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
 from reportlab.lib import colors
 from sqlalchemy import func
+from sqlalchemy.engine import make_url
 import pymysql
 
 load_dotenv()
@@ -224,7 +225,13 @@ def create_app():
     app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET', 'dev-secret')
     local_database_path = os.path.join(PROJECT_ROOT, 'instance', 'loan.db')
     default_database_path = os.path.join(tempfile.gettempdir(), 'loan.db') if os.getenv('VERCEL') else local_database_path
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL') or sqlite_url(default_database_path)
+    configured_database_url = os.getenv('DATABASE_URL') or sqlite_url(default_database_path)
+    try:
+        make_url(configured_database_url)
+    except Exception:
+        app.logger.exception('Configured database URL is invalid; falling back to temporary SQLite.')
+        configured_database_url = sqlite_url(os.path.join(tempfile.gettempdir(), 'loan.db'))
+    app.config['SQLALCHEMY_DATABASE_URI'] = configured_database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     app.config['SESSION_COOKIE_SECURE'] = False
@@ -254,9 +261,12 @@ def create_app():
     app.config['APPROVAL_FEATURES_PATH'] = approval_features_path
     app.config['APPROVAL_CSV_PATH'] = approval_csv_path
 
-    with app.app_context():
-        db.create_all()
-        cleanup_prediction_history()
+    try:
+        with app.app_context():
+            db.create_all()
+            cleanup_prediction_history()
+    except Exception:
+        app.logger.exception('Database initialization failed; continuing without startup database work.')
 
     def load_model():
         if not hasattr(app, 'ml_model') or getattr(app, 'ml_model', None) is None:
