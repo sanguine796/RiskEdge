@@ -226,6 +226,8 @@ def create_app():
     local_database_path = os.path.join(PROJECT_ROOT, 'instance', 'loan.db')
     default_database_path = os.path.join(tempfile.gettempdir(), 'loan.db') if os.getenv('VERCEL') else local_database_path
     configured_database_url = os.getenv('DATABASE_URL') or sqlite_url(default_database_path)
+    if configured_database_url.startswith('mysql://'):
+        configured_database_url = configured_database_url.replace('mysql://', 'mysql+pymysql://', 1)
     try:
         make_url(configured_database_url)
     except Exception:
