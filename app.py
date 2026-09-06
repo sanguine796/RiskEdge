@@ -2,6 +2,7 @@ import os
 import json
 import tempfile
 import warnings
+from pathlib import Path
 import pandas as pd
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, send_file
 from flask_cors import CORS
@@ -29,14 +30,14 @@ import pymysql
 
 load_dotenv()
 
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = Path(__file__).resolve().parent
 
 
 def resolve_project_path(environment_name, default_relative_path):
-    configured_path = os.getenv(environment_name, default_relative_path)
-    if os.path.isabs(configured_path):
-        return configured_path
-    return os.path.join(PROJECT_ROOT, configured_path)
+    configured_path = Path(os.getenv(environment_name, default_relative_path))
+    if configured_path.is_absolute():
+        return str(configured_path)
+    return str(PROJECT_ROOT / configured_path)
 
 
 def sqlite_url(database_path):
@@ -187,12 +188,25 @@ def _state_set(state, key, value):
 
 
 def load_or_rebuild_model(model_path, features_path, retrain_func, state, model_attr, features_attr):
+    logger = getattr(state, 'logger', None)
+    if logger:
+        logger.info(
+            'Loading ML model: model_path=%s exists=%s, features_path=%s exists=%s, VERCEL=%s',
+            model_path,
+            os.path.isfile(model_path),
+            features_path,
+            os.path.isfile(features_path),
+            bool(os.getenv('VERCEL')),
+        )
+
     if os.path.exists(model_path) and os.path.exists(features_path):
         try:
             with warnings.catch_warnings(record=True) as caught_warnings:
                 warnings.simplefilter('always')
                 model = joblib.load(model_path)
             has_compat_warning = any(isinstance(w.message, InconsistentVersionWarning) for w in caught_warnings)
+            if has_compat_warning and logger:
+                logger.error('ML model at %s was created with an incompatible scikit-learn version.', model_path)
             if model is not None and not has_compat_warning:
                 with open(features_path, encoding='utf-8') as f:
                     features = [line.strip() for line in f.readlines() if line.strip()]
@@ -200,9 +214,20 @@ def load_or_rebuild_model(model_path, features_path, retrain_func, state, model_
                 _state_set(state, features_attr, features)
                 return model
         except Exception:
-            pass
+            if logger:
+                logger.exception('Failed to load ML model from %s', model_path)
+    elif logger:
+        logger.error(
+            'ML model files are missing: model_path=%s exists=%s, features_path=%s exists=%s',
+            model_path,
+            os.path.isfile(model_path),
+            features_path,
+            os.path.isfile(features_path),
+        )
 
     if os.getenv('VERCEL'):
+        if logger:
+            logger.error('ML model unavailable on Vercel; retraining is disabled in serverless runtime.')
         _state_set(state, model_attr, None)
         _state_set(state, features_attr, [])
         return None
@@ -215,6 +240,8 @@ def load_or_rebuild_model(model_path, features_path, retrain_func, state, model_
         _state_set(state, features_attr, features)
         return model
     except Exception:
+        if logger:
+            logger.exception('Failed to retrain ML model at %s', model_path)
         _state_set(state, model_attr, None)
         _state_set(state, features_attr, [])
         return None
@@ -704,6 +731,11 @@ def create_app():
         payload = request.get_json() or request.form.to_dict()
         approval_model = load_approval_model()
         if approval_model is None:
+            app.logger.error(
+                'Approval model unavailable after load attempt: path=%s, features_path=%s',
+                app.config['APPROVAL_MODEL_PATH'],
+                app.config['APPROVAL_FEATURES_PATH'],
+            )
             return jsonify({'error': 'Approval model unavailable'}), 500
 
         features_dict = encode_approval_features(payload)
@@ -726,7 +758,16 @@ def create_app():
             }])
             proba = float(approval_model.predict_proba(df_feat)[0][1])
         except Exception:
-            proba = float(approval_model.predict_proba([feature_vector])[0][1])
+            try:
+                proba = float(approval_model.predict_proba([feature_vector])[0][1])
+            except Exception:
+                app.logger.exception(
+                    'Approval model prediction failed: model_path=%s features=%s input=%s',
+                    app.config['APPROVAL_MODEL_PATH'],
+                    app.approval_features,
+                    feature_vector,
+                )
+                return jsonify({'error': 'Approval model prediction failed'}), 500
 
         # Apply safety override for very strong applicants
         adjusted_proba, override_applied, override_reasons = apply_approval_overrides(features_dict, proba)

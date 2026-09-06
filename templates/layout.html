@@ -16,7 +16,7 @@
       <header class="topbar">
         <div class="app-header container d-flex align-items-center justify-content-between">
           <a class="brand" href="/">RiskEdge</a>
-          <nav class="nav-links d-none d-lg-flex align-items-center gap-3">
+          <nav class="nav-links align-items-center gap-3" aria-label="Primary navigation">
             {% set _p = request.path %}
             <a href="/" class="nav-link {% if _p == '/' %}active{% endif %}">Home</a>
             <a href="/dashboard" class="nav-link {% if _p.startswith('/dashboard') %}active{% endif %}">Dashboard</a>
