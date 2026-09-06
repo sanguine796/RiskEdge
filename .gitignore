@@ -5,3 +5,4 @@ __pycache__/
 .vscode/
 *.joblib
 !model/approval_model.joblib
+!model/model.joblib
