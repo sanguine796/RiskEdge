@@ -560,7 +560,7 @@ def generate_and_train_default_model(
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=random_state)
 
     base_model = RandomForestClassifier(
-        n_estimators=300,
+        n_estimators=150,
         random_state=random_state,
         class_weight='balanced_subsample',
         min_samples_leaf=2,
