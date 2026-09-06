@@ -265,6 +265,10 @@ def create_app():
         app.logger.exception('Configured database URL is invalid; falling back to temporary SQLite.')
         configured_database_url = sqlite_url(os.path.join(tempfile.gettempdir(), 'loan.db'))
     app.config['SQLALCHEMY_DATABASE_URI'] = configured_database_url
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+    }
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     app.config['SESSION_COOKIE_SECURE'] = False
